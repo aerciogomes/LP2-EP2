@@ -4,14 +4,33 @@
 #include <mutex>
 #include <time.h>
 #include "windows.h"
+#include <chrono>
+#include <thread>
+#include <conio.h>
 
 std::mutex Pessoa::entrada;
 std::mutex Pessoa::homem;
 std::mutex Pessoa::mulher;
 std::mutex Pessoa::mensagem;
 std::mutex Pessoa::slept;
-int tempo;
+int tempo = ((rand() % 300) + 5);;
+
 using namespace std;
+
+void Pessoa::Tempo(int temp)
+{
+    chrono::seconds time(temp);
+    this_thread::sleep_for(time);
+}
+
+void Pessoa::EsperaNoBanheiro()
+{
+    Tempo( rand()% 3 );
+}
+void Pessoa::TempoDeVolta()
+{
+    Tempo( rand() % 5 );
+}
 
 Pessoa::Pessoa(int id,char sexo)
 {
@@ -27,19 +46,27 @@ char Pessoa::getSexo(){
     return sexo;
 }
 void Pessoa::EntraBanheiro(){
+
     if(getSexo() == 'H'){
-        /*Pessoa::mensagem.lock();
-        std::cout << "HOMEM[" << getId() << "] CHEGOU" << std::endl;
-        Pessoa::mensagem.unlock();*/
+        Pessoa::mensagem.lock();
+        std::cout << "HOMEM[" << getId() << "] CHEGOU" << std::endl << endl;
+        Pessoa::mensagem.unlock();
 
         Pessoa::entrada.lock();
 
+        if(Banheiro::UTILIZACAO_B < Banheiro::MAX_UTILIZACAO){
         if((Banheiro::MULHERES_BANHEIRO > 0) || (Banheiro::CAPACIDADE == Banheiro::HOMENS_BANHEIRO) ||
-           ((Banheiro::HOMENS_SEG >= Banheiro::LIMITE_SEG) && (Banheiro::MULHERES_FILA > 0))){
+           ((Banheiro::HOMENS_SEG >= Banheiro::LIMITE_SEG) && (Banheiro::MULHERES_FILA > 0) ) ){
 
                 Banheiro::HOMENS_FILA++;
                 Pessoa::mensagem.lock();
                 cout << "HOMEM[" << getId() << "] ENTROU NA FILA" << endl;
+                cout << "HOMENS NA FILA : " << Banheiro::HOMENS_FILA << endl;
+                cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+                cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+                cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+                cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+                cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl << endl;
                 Pessoa::mensagem.unlock();
 
                 Pessoa::entrada.unlock();
@@ -47,44 +74,80 @@ void Pessoa::EntraBanheiro(){
 
         }
         //atualizando
+        if(Banheiro::UTILIZACAO_B < Banheiro::MAX_UTILIZACAO){
         Banheiro::HOMENS_BANHEIRO++;
         Banheiro::HOMENS_SEG++;
         Banheiro::MULHERES_SEG = 0;
         Banheiro::UTILIZACAO_B++;
         Pessoa::mensagem.lock();
-        cout << "UTILIZAÇÃO[" << Banheiro::UTILIZACAO_B << "]" <<endl;
+        cout << "HOMEN [" << getId() << "] ENTROU BANHEIRO" << endl;
+        cout << "HOMENS NA FILA: " << Banheiro::HOMENS_FILA << endl;
+        cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+        cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+        cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+        cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+        cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl;
+        cout << "UTILIZACAO: " << Banheiro::UTILIZACAO_B << endl;
+        cout << endl;
+        cout << endl;
         Pessoa::mensagem.unlock();
+
+        /*Pessoa::mensagem.lock();
+        cout << "HOMEM SEGUIDOS = " << Banheiro::HOMENS_SEG << "" << endl;
+        Pessoa::mensagem.unlock();*/
+
         //passagem de bastão
-        if(Banheiro::HOMENS_BANHEIRO < Banheiro::CAPACIDADE){
-            if(Banheiro::HOMENS_SEG < Banheiro::LIMITE_SEG && Banheiro::HOMENS_FILA > 0){
+        if(Banheiro::HOMENS_BANHEIRO < Banheiro::CAPACIDADE){//VERIFICA SE CABE MAIS HOMENS NO BANHEIRO
+            if(Banheiro::HOMENS_SEG < Banheiro::LIMITE_SEG && Banheiro::HOMENS_FILA > 0){// VERIFICA SE ATENDE AS CONDICOES PARA ENTRAR MAIS HOMENS(HOMENS SEGUIDOS)
                 Banheiro::HOMENS_FILA--;
                 Pessoa::homem.unlock();
-            }else{
+                //entrou no banheiro
+
+            }else{//LIBERA A ENTRADA NA FILA DE OUTRAS PESSOAS
 
                 Pessoa::entrada.unlock();
-                Pessoa::mensagem.lock();
+                /*Pessoa::mensagem.lock();
                 cout << "OPA"<< endl;
-                Pessoa::mensagem.unlock();
-                //entrou no banheiro
+                Pessoa::mensagem.unlock();*/
             }
-        }else{
+        }else{//LIBERA A ENTRADA DE OUTRAS PESSOAS
 
             Pessoa::entrada.unlock();
         }
-        Pessoa::mensagem.lock();
+
+        Pessoa::EsperaNoBanheiro();
+        /*Pessoa::mensagem.lock();
         std::cout << "HOMEM[" << getId() << "] ENTROU NO BANHEIRO" << std::endl;
         Pessoa::mensagem.unlock();
 
-    }
-    if(getSexo() == 'M'){
-        /*Pessoa::mensagem.lock();
-        std::cout << "MULHER[" << getId() << "] CHEGOU" << std::endl;
+        Pessoa::mensagem.lock();
+        cout << "UTILIZACAO[" << Banheiro::UTILIZACAO_B << "]" <<endl;
         Pessoa::mensagem.unlock();*/
 
+        /*Pessoa::mensagem.lock();
+        cout << "HOMENS NA FILA: " << Banheiro::HOMENS_FILA << endl;
+        cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+        cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+        cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+        cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+        cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl;
+        cout << endl;
+        cout << endl;
+        Pessoa::mensagem.unlock();*/
+
+    }
+        }
+    }
+    if(getSexo() == 'M'){
+        Pessoa::mensagem.lock();
+        std::cout << "MULHER[" << getId() << "] CHEGOU" << std::endl;
+        Pessoa::mensagem.unlock();
+
         Pessoa::entrada.lock();
-        //volta pra fila
+        //FAZ A MULHER TRAVAR(FICAR NA FILA)
+        if(Banheiro::UTILIZACAO_B < Banheiro::MAX_UTILIZACAO){
         if((Banheiro::HOMENS_BANHEIRO > 0) || (Banheiro::MULHERES_BANHEIRO == Banheiro::CAPACIDADE) ||
-           ((Banheiro::MULHERES_SEG >= Banheiro::LIMITE_SEG) && (Banheiro::HOMENS_FILA > 0)) ){
+           ((Banheiro::MULHERES_SEG >= Banheiro::LIMITE_SEG) && (Banheiro::HOMENS_FILA > 0) ) ){
 
             Banheiro::MULHERES_FILA++;
 
@@ -102,35 +165,59 @@ void Pessoa::EntraBanheiro(){
         Banheiro::MULHERES_BANHEIRO++;
         Banheiro::UTILIZACAO_B++;
 
-        Pessoa::mensagem.lock();
-        cout << "UTILIZAÇÃO[" << Banheiro::UTILIZACAO_B << "]" <<endl;
-        Pessoa::mensagem.unlock();
-
         /*Pessoa::mensagem.lock();
-        cout << "MULHER SEGUIDA "<< Banheiro::MULHER_SEG << endl;
+        cout << "MULHER SEGUIDA "<< Banheiro::MULHERES_SEG << endl;
         Pessoa::mensagem.unlock();*/
+        Pessoa::mensagem.lock();
+        cout << "MULHER [" << getId() << "] ENTROU NO BANHEIRO" << endl;
+        cout << "HOMENS NA FILA: " << Banheiro::HOMENS_FILA << endl;
+        cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+        cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+        cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+        cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+        cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl;
+        cout << "UTILIZACAO: " << Banheiro::UTILIZACAO_B << endl;
+        cout << endl;
+        cout << endl;
+        Pessoa::mensagem.unlock();
 
         //passagem de bastão
         if(Banheiro::MULHERES_BANHEIRO < Banheiro::CAPACIDADE && Banheiro::MULHERES_SEG < Banheiro::LIMITE_SEG && Banheiro::MULHERES_FILA > 0){
                 Banheiro::MULHERES_FILA--;
                 Pessoa::mulher.unlock();
-                Pessoa::mensagem.lock();
+                /*Pessoa::mensagem.lock();
                 cout << "OPA2" <<endl;
-                Pessoa::mensagem.unlock();
+                Pessoa::mensagem.unlock();*/
         }
         else
             Pessoa::entrada.unlock();
-            //entrou no banheiro
-            Pessoa::mensagem.lock();
-            std::cout << "MULHER[" << getId() << "] ENTROU NO BANHEIRO" << std::endl;
-            Pessoa::mensagem.unlock();
 
         }else{
-            Pessoa::mensagem.lock();
+            Pessoa::entrada.unlock();
+            //ENTROU NO BANHEIRO
         }
+        /*Pessoa::mensagem.lock();
+        cout << "UTILIZACAO[" << Banheiro::UTILIZACAO_B << "]" <<endl;
+        Pessoa::mensagem.unlock();*/
+
+        /*Pessoa::mensagem.lock();
+        cout << "HOMENS NA FILA: " << Banheiro::HOMENS_FILA << endl;
+        cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+        cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+        cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+        cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+        cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl;
+        cout << endl;
+        cout << endl;
+        Pessoa::mensagem.unlock();*/
+    }else{
+        Pessoa::entrada.unlock();
+    }
+    Pessoa::EsperaNoBanheiro();
     }
 
 }
+
 void Pessoa::SaiBanheiro(){
      if(getSexo() == 'H'){
         Pessoa::entrada.lock();
@@ -139,36 +226,46 @@ void Pessoa::SaiBanheiro(){
 
         Pessoa::mensagem.lock();
         std::cout << "HOMEM[" << getId() << "] SAIU DO BANHEIRO" << std::endl;
+        cout << "HOMENS NA FILA: " << Banheiro::HOMENS_FILA << endl;
+        cout << "HOMENS NO BANHEIRO: " << Banheiro::HOMENS_BANHEIRO << endl;
+        cout << "HOMENS CONSECUTIVOS: " << Banheiro::HOMENS_SEG << endl;
+        cout << "MULHERES NA FILA: " << Banheiro::MULHERES_FILA << endl;
+        cout << "MULHERES NO BANHEIRO: " << Banheiro::MULHERES_BANHEIRO << endl;
+        cout << "MULHERES CONSECUTIVAS: " << Banheiro::MULHERES_SEG << endl << endl;
         Pessoa::mensagem.unlock();
 
-        //(signal)
-        if(Banheiro::MULHERES_FILA > 0 && Banheiro::HOMENS_BANHEIRO == 0){
+        //(signal) = PASSAGEM DE BASTAO
+        if((Banheiro::MULHERES_FILA > 0 && Banheiro::HOMENS_BANHEIRO == 0)){
                 Banheiro::MULHERES_FILA--;
                 Pessoa::mulher.unlock();
+
         }
         else {
-            if(Banheiro::HOMENS_FILA > 0 && Banheiro::HOMENS_SEG < Banheiro::LIMITE_SEG){
+            if((Banheiro::HOMENS_FILA > 0) && (Banheiro::HOMENS_SEG < Banheiro::LIMITE_SEG)){
                 Banheiro::HOMENS_FILA--;
                 Pessoa::homem.unlock();
-            }
-            else
+            }else{
                 Pessoa::entrada.unlock();
+            }
         }
     }
 
     if(getSexo() == 'M'){
         Pessoa::entrada.lock();
 
-        Pessoa::mensagem.lock();
+        /*Pessoa::mensagem.lock();
         std::cout << "MULHER[" << getId() << "] SAIU DO BANHEIRO" << std::endl;
-        Pessoa::mensagem.unlock();
+        Pessoa::mensagem.unlock();*/
 
         Banheiro::MULHERES_BANHEIRO--;
 
-        //signal
+        //signal = PASSAGEM DE BASTAO
         if(Banheiro::MULHERES_BANHEIRO == 0 && Banheiro::HOMENS_FILA > 0){
                 Banheiro::HOMENS_FILA--;
                 Pessoa::homem.unlock();
+                /*Pessoa::mensagem.lock();
+                cout << "OPA2" <<endl;
+                Pessoa::mensagem.unlock();*/
             }
         else {
             if(Banheiro::MULHERES_FILA > 0 && Banheiro::MULHERES_SEG < Banheiro::LIMITE_SEG){
@@ -183,15 +280,10 @@ void Pessoa::SaiBanheiro(){
 }
 void Pessoa::darVolta(){
 
-    Pessoa::slept.lock();
-    tempo = ((rand() % 300) + 5);
-    Sleep(tempo);
-    cout << "TEMPO = " << tempo << endl;
-    Pessoa::slept.unlock();
-
-    Pessoa::mensagem.lock();
+    Pessoa::TempoDeVolta();
+    /*Pessoa::mensagem.lock();
     cout << "Deu uma volta" <<endl;
-    Pessoa::mensagem.unlock();
+    Pessoa::mensagem.unlock();*/
 
 }
 
@@ -199,8 +291,17 @@ void Pessoa::Run(){
     while(Banheiro::UTILIZACAO_B < Banheiro::MAX_UTILIZACAO){
             EntraBanheiro();
             if(Banheiro::UTILIZACAO_B >= Banheiro::MAX_UTILIZACAO){
+                Pessoa::mensagem.lock();
+                cout << " " << getSexo() << " [ " << getId() << " ] Saindo do programa" << endl;
+                Pessoa::mensagem.unlock();
+
+                Pessoa::mulher.unlock();
+                Pessoa::homem.unlock();
+
+                Pessoa::entrada.unlock();
                 break;
             }
+
             SaiBanheiro();
 
             darVolta();

@@ -15,9 +15,9 @@ int main() {
 
     for (int i = 0; i < MAX; i++){
         if(i%2)
-            pessoa[i] = new Pessoa(i, 'H');
-        else
             pessoa[i] = new Pessoa(i, 'M');
+        else
+            pessoa[i] = new Pessoa(i, 'H');
     }
 
     Pessoa::mulher.lock();

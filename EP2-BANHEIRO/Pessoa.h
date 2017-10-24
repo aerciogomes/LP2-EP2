@@ -17,6 +17,10 @@ public:
     static std::mutex mensagem;
     static std::mutex slept;
 
+    void EsperaNoBanheiro();
+    void TempoDeVolta();
+    void Tempo(int);
+
     void EntraBanheiro();
     void SaiBanheiro();
     void darVolta();
