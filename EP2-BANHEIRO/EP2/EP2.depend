@@ -1,0 +1,38 @@
+# depslib dependency file v1.0
+1508808921 source:c:\users\aerci\desktop\ep2-banheiro\banheiro.cpp
+	"banheiro.h"
+
+1508797200 source:c:\users\aerci\desktop\ep2-banheiro\homem.cpp
+	<mutex>
+	<iostream>
+
+1508805167 source:c:\users\aerci\desktop\ep2-banheiro\main.cpp
+	"Pessoa.h"
+	<iostream>
+	<vector>
+	<mutex>
+	<thread>
+	"Pessoa.h"
+
+1508802539 c:\users\aerci\desktop\ep2-banheiro\banheiro.h
+	<mutex>
+
+1508797200 c:\users\aerci\desktop\ep2-banheiro\homem.h
+	"banheiro.h"
+	<mutex>
+
+1508799070 c:\users\aerci\desktop\ep2-banheiro\mulher.h
+	"banheiro.h"
+	<mutex>
+
+1508804506 c:\users\aerci\desktop\ep2-banheiro\pessoa.h
+	<mutex>
+
+1508809072 source:c:\users\aerci\desktop\ep2-banheiro\pessoa.cpp
+	"banheiro.h"
+	"Pessoa.h"
+	<iostream>
+	<mutex>
+	<time.h>
+	"windows.h"
+
